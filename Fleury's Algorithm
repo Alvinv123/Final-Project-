@@ -147,9 +147,8 @@ public class EulerWork2{
         isVisited[v] = true;
         int count = 1;
         // Recur for all vertices adjacent to this vertex
-        for(int i =0; i < numArray.length; i++){
-
-            if(!isVisited[i]){
+        for(int i =0; i < numArray.length; ++i){
+            if( numArray[v][i] == 1 && !isVisited[i]){
                 count = count + dfsCount(i, isVisited);
             }
         }
