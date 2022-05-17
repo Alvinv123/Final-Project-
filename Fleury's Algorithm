@@ -83,22 +83,27 @@ public class EulerWork2{
         System.out.println();
     }
 
-    /**
+ /**
      * Print Euler tour starting from vertex u
      */
     private void printEulerUtil(int u){
         // Recur for all the vertices adjacent to this
         // vertex
+        int v =0;
         for(int i = 0; i < numArray.length; i++){
-            int v = numArray[u][i];
-            // If edge u-v is a valid next edge
-            if (isValidNextEdge(u, v)) {
-                System.out.print(u + "-" + v + " ");
 
-                // This edge is used so remove it now
-                removeEdge(u, v);
-                printEulerUtil(v);
+            if(numArray[u][i] ==1){
+                v = i;
+                if (isValidNextEdge(u, v)) {
+                    System.out.print(u + "-" + v + " ");
+
+                    // This edge is used so remove it now
+                    removeEdge(u, v);
+                    printEulerUtil(v);
+                }
             }
+          
+
         }
     }
 
@@ -147,9 +152,8 @@ public class EulerWork2{
         isVisited[v] = true;
         int count = 1;
         // Recur for all vertices adjacent to this vertex
-        for(int i =0; i < numArray.length; i++){
-
-            if(!isVisited[i]){
+        for(int i =0; i < numArray.length; ++i){
+            if( numArray[v][i] == 1 && !isVisited[i]){
                 count = count + dfsCount(i, isVisited);
             }
         }
