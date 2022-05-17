@@ -1,0 +1,214 @@
+public class EulerWork2{
+    //field declaration
+    private String [] oddEvenArray;
+    private int [][] numArray;
+    private int sum;
+
+    /**
+     * Constructor
+     */
+    public EulerWork2(){
+        oddEvenArray = new String[4];
+        numArray = new int[4][4]; 
+        sum = 0;
+        graphGenerator();  
+    }
+
+    public static void main(String [] args){
+        EulerWork2 graph = new EulerWork2();
+        graph.vertexDegree();
+        graph.printEulerTour();
+    }
+
+    /**
+     * Generate a graph
+     */
+    public void graphGenerator(){
+
+        numArray[0][0] = 0;
+        numArray[0][1] = 1;
+        numArray[0][2] = 1;
+        numArray[0][3] = 0;
+
+        numArray[1][0] = 1;
+        numArray[1][1] = 0;
+        numArray[1][2] = 1;
+        numArray[1][3] = 0;
+
+        numArray[2][0] = 1;
+        numArray[2][1] = 1;
+        numArray[2][2] = 0;
+        numArray[2][3] = 1;
+
+        numArray[3][0] = 0;
+        numArray[3][1] = 0;
+        numArray[3][2] = 1;
+        numArray[3][3] = 0;
+    }
+
+    /**
+     * Sum of the degree of every node
+     */
+    public void vertexDegree(){
+        int oddCounter = 0;
+        for(int i = 0; i < numArray.length; i++)
+        {
+
+            sum = 0;
+            for(int j = 0; j < numArray.length; j++)
+            {
+                if(numArray[i][j] == 1){
+                    sum = sum + numArray[i][j];
+
+                }
+            }
+            if(sum % 2 == 0){
+                oddEvenArray[i] = "e";
+            } else if(sum % 2 == 1){
+                oddEvenArray[i] = "o";
+            }
+
+            System.out.println("\nThe degree of vertex  " + i + " = " + sum);
+        }
+
+        for(int i =0; i < oddEvenArray.length ; i++){
+            System.out.print(oddEvenArray[i]+ ", ");
+            if(oddEvenArray[i].equals("o")){
+                oddCounter++;
+            }
+        }
+        System.out.println();
+        if(oddCounter == 0){
+
+            System.out.println("Euler Circuit detected");
+        } else if(oddCounter <= 2){
+            System.out.println("Euler Path detected");
+        } else{
+            System.out.println("Neither Euler Circuit nor Path is detected");
+        }
+        System.out.println();
+    }
+
+    /*................Fleury's Algorithm....................,*/
+
+    /**
+     * Adding an edge u-v
+     */
+    public void addEdge(int u, int v){
+        numArray[u][v] = 1;
+        numArray[v][u] = 1;
+    }
+
+    /**
+     * Removing an edge  from the graph
+     */
+    public void removeEdge(int u, int v){
+        numArray[u][v] = 0;
+        numArray[v][u] = 0;
+    }
+
+    /**
+     * Find a vertex with an odd degree and use it as
+     * the starting node of the path or circuit
+     */
+    public void printEulerTour(){
+        int u = 0;
+        int deg = 0;// if all are even, will choose the first node
+        for(int i = 0; i < numArray.length;i++){
+            deg = 0;
+            //finding vertex with odd degree
+            for(int j = 0; j < numArray.length;j++){
+                if(numArray[i][j] == 1){
+                    deg +=1; // counts a degree
+                }
+            }
+            if(deg % 2 != 0){ // which means odd
+                u = i;// select that node to be the starting
+                break;
+            }
+        }
+
+        printEulerUtil(u);
+        System.out.println();
+    }
+
+    /**
+     * Print Euler tour starting from vertex u
+     */
+    private void printEulerUtil(int u){
+        // Recur for all the vertices adjacent to this
+        // vertex
+        int v =0;
+        for(int i = 0; i < numArray.length; i++){
+
+            if(numArray[u][i] ==1){
+                v = i;
+                if (isValidNextEdge(u, v)) {
+                    System.out.print(u + "-" + v + " ");
+
+                    // This edge is used so remove it now
+                    removeEdge(u, v);
+                    printEulerUtil(v);
+                }
+            }
+            // If edge u-v is a valid next edge
+
+        }
+    }
+
+    // The function to check if edge u-v can be
+    // considered as next edge in Euler Tour
+    private boolean isValidNextEdge(int u, int v){
+
+        // The edge u-v is valid in one of the
+        // following two cases:
+
+        // 1) If v is the only adjacent vertex of u
+        // ie size of adjacent vertex list is 1
+        int sum = 0;
+        for(int i = 0; i < numArray.length; i++){ 
+            //loops around and check if there is more than
+            //one connection
+            if(numArray[u][i] == 1){
+                sum +=1;
+            }
+        }
+        if(sum == 1){
+            return true;
+        }
+
+        // 2) If there are multiple adjacents, then
+        // u-v is not a bridge Do following steps
+        // to check if u-v is a bridge
+        // 2.a) count of vertices reachable from u
+        boolean[] isVisited = new boolean[numArray.length];
+        int count1 = dfsCount(u, isVisited);
+        // 2.b) Remove edge (u, v) and after removing
+        //  the edge, count vertices reachable from u
+        removeEdge(u, v);
+        isVisited = new boolean[numArray.length];
+        int count2 = dfsCount(u, isVisited);
+        // 2.c) Add the edge back to the graph
+        addEdge(u, v);
+        return (count1 > count2) ? false : true;
+    }
+
+    // A DFS based function to count reachable
+    // vertices from v
+    private int dfsCount(int v, boolean[] isVisited)
+    {
+        // Mark the current node as visited
+        isVisited[v] = true;
+        int count = 1;
+        // Recur for all vertices adjacent to this vertex
+        for(int i =0; i < numArray.length; i++){
+
+            if(!isVisited[i] && numArray[v][i] == 1){
+                count = count + dfsCount(i, isVisited);
+            }
+        }
+
+        return count;
+    }
+
+}
